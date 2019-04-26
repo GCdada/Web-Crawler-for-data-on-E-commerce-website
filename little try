@@ -265,10 +265,3 @@ df = pd.read_csv(filename)
 fd = pd.read_csv('attributes__' + filename)
 merge = pd.concat([df, fd], axis=1, join_axes=[df.index])
 merge.to_csv('merge.csv', encoding='utf_8_sig')
-
-except Exception as err:
-    pass
-
-get_more_pages(1,2)
-# combine_append()
-# write_excel()
