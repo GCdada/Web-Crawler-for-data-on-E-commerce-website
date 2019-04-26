@@ -101,4 +101,174 @@ def get_page(url, data=None):
     img(img_final, img_finals)
 except Exception as err: pass
 
+import urllib.request
+import re
+import random
+import ssl
+import time
+
+ssl._create_default_https_context = ssl._create_unverified_context 
+
+uapools = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393",
+    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.22 Safari/537.36 SE 2.X MetaSr 1.0",
+    "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 5.1; Maxthon 2.0)",
+]  
+
+keyname = "keywords"
+key = urllib.request.quote(keyname) 
+
+def ua(uapools):  
+    thisua = random.choice(uapools)
+    print('\n', thisua)
+    headers = ("User-Agent", thisua)
+    opener = urllib.request.build_opener()
+    opener.addheaders = [headers]
+    urllib.request.install_opener(opener)
+
+url = "https://www.【your target】" + key + "?" + "pn="
+
+def get_more_pages(start,end): 
+    for one in range(start, end):
+        get_page(url+str(one))
+        time.sleep(2)
+try:
+    print("--------now collecting_" + keyname + "_info--------")
+
+    def get_page(url, data=None):
+        print("\n-------now loading a new page-----" + "url is \t" + url)
+        ua(uapools)
+        wb_data = urllib.request.urlopen(url).read().decode("utf-8", "ignore")
+        id_list = re.findall(r'"id":"(.*?)"', wb_data)
+        name_list = re.findall(r'"name":"(.*?)"', wb_data) 
+        position_list = re.findall(r'"position":"(.*?)"', wb_data)  
+
+        price_list = re.findall(r'"price":(.*?),', wb_data) 
+        variant_list = re.findall(r'"variant":"(.*?)"', wb_data) 
+
+        # print("\n", keyname + "。。。", id_list, len(id_list))
+        # print("\n", keyname+ "。。。", name_list, len(name_list))
+        # print("\n", keyname + "。。。", position_list, len(name_list))
+        # print("\n", keyname + "。。。", price_list, len(name_list))
+        # print("\n", keyname + "。。。", variant_list, len(name_list))
+ 
+        # data_info = []
+        if data == None:
+            for id_code, name, position, price, variant in zip(id_list, name_list, position_list, price_list,
+                                                               variant_list):
+                data = {
+                    'id_code': id_code,
+                    'name': name,
+                    'position': position,
+                    'price': price,
+                    'variant': variant
+                }
+                print(data)
+            #     data_info.append(data)
+            # print("\n", data_info, len(data_info))
+
+
+        img_list = re.findall(r'src="(.*?)"..', wb_data)
+        # print(img_list, len(img_list))
+        string = 'resource'
+
+        img_urls = []
+        id_codes = []
+        img_finals = []
+
+        for i in range(0, len(img_list)):
+            if img_list[i].split('.')[-1] == 'png' and string in img_list[i]:
+                # print(img_list[i])
+                img_urls.append(img_list[i])
+                id_codes.append(img_list[i].split('/'))
+
+        if len(img_urls) == 36:
+            img_final = img_urls
+            print(img_final, len(img_final))
+
+        elif len(img_urls) == 72:
+             for e in range(36, len(img_urls)):
+                img_finals.append(img_urls[e])
+             print(img_finals, len(img_finals))
+
+        time = []
+        for r in range(0, len(id_codes)):
+            date = id_codes[r][4] + "/" + id_codes[r][5] + "/" + id_codes[r][6]
+            time.append(date)
+        print(time)
+
+
+        def img(img_final, img_finals):
+            for j in range(0, len(img_final)):
+                try:
+                    thisimg = img_final[j]
+                    # print(img_final[j])
+                    thisimgurl = thisimg
+                    localfile = "/Users/。。。。/downloads/scrap/" + name_list[j] + "_" + variant_list[j] +\
+                            "_" + position_list[j] + ".png"
+                    urllib.request.urlretrieve(thisimgurl, filename=localfile)
+                except Exception as err:
+                    pass
+
+            for g in range(0, len(img_finals)):
+                try:
+                    thatimg = img_finals[j]
+                    # print(img_finals[j])
+                    thatimgurl = thatimg
+                    localfile = "/Users/。。。。/downloads/scrap/" + name_list[j] + "_" + variant_list[
+                        j] + "_" + position_list[j] + ".png"
+                    urllib.request.urlretrieve(thatimgurl, filename=localfile)
+                except Exception as err:
+                    pass
+        img(img_final, img_finals)
+
+        # CSV part 1
+        filename = key + '_product_info.csv'
+        with open(filename, 'a+', newline = '', encoding = 'utf_8_sig') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['time', 'id_code', 'name', 'price', 'variant', 'position', 'page', 'attribute'])
+            for v in range(0, len(time_date)):
+                rows = [time_date[v], id_list[v], name_list[v], price_list[v], variant_list[v], position_list[v],
+                    page_url[v], attribute[v]]
+                print(rows)
+                writer.writerow(rows)
+
+except Exception as err:
+    pass
+
+get_more_pages(1, 8)
+
+#CSV part 2
+filename = gender + '_' + key + '_product_info.csv'
+
+data_split = pd.read_csv(filename)['attribute']
+f = open('attributes__' + filename, 'w', newline='', encoding='utf_8_sig')
+writer = csv.writer(f)
+writer.writerow(
+    ['attribute_1', 'attribute_2', 'attribute_3', 'attribute_4', 'attribute_5', 'attribute_6', 'attribute_7',
+     'attribute_8', 'attribute_9', 'attribute_10', 'attribute_11',
+     'attribute_12', 'attribute_13', 'attribute_14','attribute_15','attribute_16','attribute_17',
+     'num'])
+for row in data_split:
+    att_split = str(row).split(',')
+    print(len(att_split))
+    att = str(att_split).replace("'", '').replace('[', '').replace(']', '').replace("'", '')
+    print(att)
+    c = att, len(att_split)
+    print(c)
+    f.write(str(c).replace("'", '').replace('(', '').replace(')', ''))
+    f.write('\n')
+f.close
+
+#CSV part 3
+df = pd.read_csv(filename)
+fd = pd.read_csv('attributes__' + filename)
+merge = pd.concat([df, fd], axis=1, join_axes=[df.index])
+merge.to_csv('merge.csv', encoding='utf_8_sig')
+
+except Exception as err:
+    pass
+
 get_more_pages(1,2)
+# combine_append()
+# write_excel()
